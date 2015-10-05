@@ -12,6 +12,8 @@ Android application to manage your Notti bluetooth device from BLE gatt interfac
 * set RGB color
 * set color intensity
 
+Characteristics on Notti cant be read on current device firmware. Previous state should be memorized to maintain statefull processing.
+
 <hr/>
 
 <h3>Build</h3>
