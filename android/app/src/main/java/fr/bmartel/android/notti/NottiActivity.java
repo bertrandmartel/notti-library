@@ -57,7 +57,7 @@ import fr.bmartel.android.bluetooth.shared.ActionFilterGatt;
 import fr.bmartel.android.bluetooth.shared.StableArrayAdapter;
 
 /**
- * Flower Power bluetooth device management main activity
+ * Notti bluetooth device management main activity
  *
  * @author Bertrand Martel
  */

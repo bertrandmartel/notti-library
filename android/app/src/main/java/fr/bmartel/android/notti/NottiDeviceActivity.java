@@ -41,7 +41,7 @@ import com.larswerkman.holocolorpicker.ColorPicker;
 import fr.bmartel.android.bluetooth.notti.INottiDevice;
 
 /**
- * Flower Power device description activity
+ * Notti device description activity
  *
  * @author Bertrand Martel
  */
