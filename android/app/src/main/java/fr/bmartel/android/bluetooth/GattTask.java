@@ -24,34 +24,60 @@
 package fr.bmartel.android.bluetooth;
 
 import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import fr.bmartel.android.bluetooth.connection.IBluetoothDeviceConn;
 import fr.bmartel.android.bluetooth.listener.IPushListener;
-import fr.bmartel.android.utils.ManualResetEvent;
 
 /**
- * Generic interface for bluetooth custom manager
- *
- * @author  Bertrand Martel
+ * @author Bertrand Martel
  */
-public interface IBluetoothCustomManager {
+public abstract class GattTask implements Runnable {
 
-    public ManualResetEvent getEventManager();
+    private String gattUid = "";
+    private byte[] value = null;
 
-    public void broadcastUpdate(String action);
+    private String descriptorCharacUid="";
+    private String descriptorServiceUid="";
+    private IPushListener listener = null;
 
-    public void broadcastUpdateStringList(String action, ArrayList<String> strList);
+    private BluetoothGatt gatt = null;
 
-    public void writeCharacteristic(String characUid, byte[] value, BluetoothGatt gatt,IPushListener listener);
+    public GattTask(BluetoothGatt gatt,String descriptorUid,byte[] descriptorVal,String serviceUid,String characUid) {
+        this.gatt=gatt;
+        this.gattUid=descriptorUid;
+        this.value=descriptorVal;
+        this.descriptorCharacUid=characUid;
+        this.descriptorServiceUid=serviceUid;
+    }
 
-    public void readCharacteristic(String characUid, BluetoothGatt gatt);
+    public GattTask(BluetoothGatt gatt,String gattUid,byte[] value,IPushListener listener){
+        this.gatt=gatt;
+        this.gattUid=gattUid;
+        this.value=value;
+        this.listener=listener;
+    }
 
-    public void writeDescriptor(String descriptorUid, BluetoothGatt gatt,byte[] value,String serviceUid,String characUid);
+    public String getUid(){
+        return gattUid;
+    }
 
-    public HashMap<String,IBluetoothDeviceConn> getConnectionList();
+    public byte[] getValue(){
+        return value;
+    }
+
+    public String getDescriptorServiceUid(){
+        return descriptorServiceUid;
+    }
+
+    public String getDescriptorCharacUid(){
+        return descriptorCharacUid;
+    }
+
+    public BluetoothGatt getGatt(){
+        return gatt;
+    }
+
+    public IPushListener getListener(){
+        return listener;
+    }
+
 }

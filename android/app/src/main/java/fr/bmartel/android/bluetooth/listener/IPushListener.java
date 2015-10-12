@@ -21,37 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package fr.bmartel.android.bluetooth;
-
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import fr.bmartel.android.bluetooth.connection.IBluetoothDeviceConn;
-import fr.bmartel.android.bluetooth.listener.IPushListener;
-import fr.bmartel.android.utils.ManualResetEvent;
+package fr.bmartel.android.bluetooth.listener;
 
 /**
- * Generic interface for bluetooth custom manager
- *
- * @author  Bertrand Martel
+ * @author Bertrand Martel
  */
-public interface IBluetoothCustomManager {
+public interface IPushListener {
 
-    public ManualResetEvent getEventManager();
+    /**
+     * called when push fail
+     */
+    public void onPushFailure();
 
-    public void broadcastUpdate(String action);
+    /**
+     * called when push success
+     */
+    public void onPushSuccess();
 
-    public void broadcastUpdateStringList(String action, ArrayList<String> strList);
-
-    public void writeCharacteristic(String characUid, byte[] value, BluetoothGatt gatt,IPushListener listener);
-
-    public void readCharacteristic(String characUid, BluetoothGatt gatt);
-
-    public void writeDescriptor(String descriptorUid, BluetoothGatt gatt,byte[] value,String serviceUid,String characUid);
-
-    public HashMap<String,IBluetoothDeviceConn> getConnectionList();
 }

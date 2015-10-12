@@ -49,7 +49,7 @@ public class LeDeviceListAdapter extends BaseAdapter {
             Log.i(this.getClass().getName(), "New Bluetooth device found with name : " + device.getName());
             Log.i(this.getClass().getName(), "Device with address : " + device.getAddress());
 
-            //filter only Notti
+            //filter only Dotti
             if (device.getName()!=null) {
 
                 if (device.getName().startsWith("Notti")) {

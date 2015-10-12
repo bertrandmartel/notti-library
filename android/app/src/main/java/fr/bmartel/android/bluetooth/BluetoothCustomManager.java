@@ -39,15 +39,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import fr.bmartel.android.bluetooth.connection.BluetoothDeviceConn;
 import fr.bmartel.android.bluetooth.connection.IBluetoothDeviceConn;
+import fr.bmartel.android.bluetooth.listener.IPushListener;
 import fr.bmartel.android.bluetooth.shared.ISharedActivity;
 import fr.bmartel.android.bluetooth.shared.LeDeviceListAdapter;
 import fr.bmartel.android.bluetooth.shared.StableArrayAdapter;
+import fr.bmartel.android.utils.ByteUtils;
 import fr.bmartel.android.utils.ManualResetEvent;
 
 
@@ -69,7 +72,7 @@ public class BluetoothCustomManager implements IBluetoothCustomManager {
     private static final int MAXIMUM_POOL_SIZE = 1;
 
     // Sets the amount of time an idle thread will wait for a task before terminating
-    private static final int KEEP_ALIVE_TIME = 2;
+    private static final int KEEP_ALIVE_TIME = 5;
 
     // set time unit in seconds
     private static final TimeUnit KEEP_ALIVE_TIME_UNIT;
@@ -335,15 +338,65 @@ public class BluetoothCustomManager implements IBluetoothCustomManager {
 
     @SuppressLint("NewApi")
     @Override
-    public void writeCharacteristic(final BluetoothGattCharacteristic charac, byte[] value, final BluetoothGatt gatt) {
+    public void writeCharacteristic(String characUid, byte[] value, BluetoothGatt gatt,IPushListener listener) {
 
-        charac.setValue(value);
+        if (gatt!=null && characUid!=null && value!=null) {
 
-        if (gatt!=null && charac!=null && value!=null) {
+            gattThreadPool.execute(new GattTask(gatt,characUid,value,listener) {
+                @Override
+                public void run() {
+                    BluetoothGattCharacteristic charac = GattUtils.getCharacteristic(getGatt().getServices(), getUid());
+                    charac.setValue(getValue());
+
+                    System.out.println("before " + ByteUtils.byteArrayToStringMessage("", charac.getValue(), '|'));
+                    getGatt().writeCharacteristic(charac);
+
+                    long startTime = System.currentTimeMillis();
+                    eventManager.reset();
+                    try {
+                        eventManager.waitOne(BT_TIMEOUT);
+                        System.out.println("after");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    long endTime = System.currentTimeMillis();
+
+                    if ((endTime-startTime)>=BT_TIMEOUT){
+                        if (getListener()!=null){
+                            getListener().onPushFailure();
+                        }
+                    }else{
+                        if (getListener()!=null){
+                            getListener().onPushSuccess();
+                        }
+                    }
+                }
+            });
             gattThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    gatt.writeCharacteristic(charac);
+
+
+                }
+            });
+        }
+        else
+            System.err.println("Error int writeCharacteristic() input argument NULL");
+    }
+
+    @SuppressLint("NewApi")
+    @Override
+    public void readCharacteristic(String characUid, BluetoothGatt gatt) {
+
+        if (gatt!=null && characUid!=null) {
+
+            gattThreadPool.execute(new GattTask(gatt,characUid,null,null) {
+                @Override
+                public void run() {
+
+                    BluetoothGattCharacteristic charac = GattUtils.getCharacteristic(getGatt().getServices(), getUid());
+
+                    getGatt().readCharacteristic(charac);
                     eventManager.reset();
                     try {
                         eventManager.waitOne(BT_TIMEOUT);
@@ -359,45 +412,35 @@ public class BluetoothCustomManager implements IBluetoothCustomManager {
 
     @SuppressLint("NewApi")
     @Override
-    public void readCharacteristic(final BluetoothGattCharacteristic charac, final BluetoothGatt gatt) {
+    public void writeDescriptor(String descriptorUid, BluetoothGatt gatt,byte[] value,String serviceUid,String characUid) {
 
-        if (gatt!=null && charac!=null) {
-            gattThreadPool.execute(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("read");
-                    gatt.readCharacteristic(charac);
-                    eventManager.reset();
-                    try {
-                        eventManager.waitOne(BT_TIMEOUT);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    System.out.println("read end");
-                }
-            });
-        }
-        else
-            System.err.println("Error int writeCharacteristic() input argument NULL");
-    }
+        if (gatt!=null && descriptorUid!=null) {
 
-    @SuppressLint("NewApi")
-    @Override
-    public void writeDescriptor(final BluetoothGattDescriptor descriptor, final BluetoothGatt gatt) {
+            gattThreadPool.execute(new GattTask(gatt,descriptorUid,value,serviceUid,characUid) {
+               @Override
+               public void run() {
 
-        if (gatt!=null && descriptor!=null) {
-            gattThreadPool.execute(new Runnable() {
-                @Override
-                public void run() {
-                    gatt.writeDescriptor(descriptor);
-                    eventManager.reset();
-                    try {
-                        eventManager.waitOne(BT_TIMEOUT);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
+                   BluetoothGattDescriptor descriptor = getGatt().getService(UUID.fromString(getDescriptorServiceUid()))
+                           .getCharacteristic(UUID.fromString(getDescriptorCharacUid())).getDescriptor(UUID.fromString(getUid()));
+
+                   descriptor.setValue(getValue());
+
+                   getGatt().writeDescriptor(descriptor);
+                   eventManager.reset();
+                   try {
+                       eventManager.waitOne(BT_TIMEOUT);
+                   } catch (Exception e) {
+                       e.printStackTrace();
+                   }
+
+               }
+           });
+                    gattThreadPool.execute(new Runnable() {
+                        @Override
+                        public void run() {
+
+                        }
+                    });
         }
         else
             System.err.println("Error int writeCharacteristic() input argument NULL");

@@ -23,6 +23,8 @@
  */
 package fr.bmartel.android.notti;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -30,7 +32,6 @@ import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
@@ -39,28 +40,69 @@ import android.widget.ToggleButton;
 import com.larswerkman.holocolorpicker.ColorPicker;
 
 import fr.bmartel.android.bluetooth.notti.INottiDevice;
+import fr.bmartel.android.bluetooth.listener.IPushListener;
+import fr.bmartel.android.notti.NottiBtService;
 
 /**
- * Notti device description activity
+ * Flower Power device description activity
  *
  * @author Bertrand Martel
  */
-public class NottiDeviceActivity extends ActionBarActivity implements ColorPicker.OnColorChangedListener,SeekBar.OnSeekBarChangeListener, View.OnClickListener {
+public class NottiDeviceActivity extends Activity implements ColorPicker.OnColorChangedListener,SeekBar.OnSeekBarChangeListener, View.OnClickListener {
+
+    /**
+     * dialog shown when user tap on icon slot
+     */
+    private Dialog dialogIconSelect = null;
 
     private String TAG = NottiDeviceActivity.this.getClass().getName();
 
+    /**
+     * BLE wrapper service
+     */
     private NottiBtService currentService = null;
 
+    /**
+     * onOff state for Notti device
+     */
     private boolean state = false;
 
+    /**
+     * define if one command has already been sent (we block until command completion reached)
+     */
+    private boolean waitingForResponse = false;
+
+    /**
+     * Dotti device object we can use api from
+     */
     private INottiDevice device = null;
 
+    /**
+     * device address
+     */
     private String address = "";
 
+    /**
+     *  progress bar
+     */
     private ProgressDialog progress;
+
+    /**
+     * Called when user click on icon slot
+     *
+     * @param v
+     * 		icon button view
+     */
+    public void pictureClick(View v){
+
+        Log.i(TAG,"picture click");
+        String ressouceNme=getResources().getResourceEntryName(v.getId());
+        dialogIconSelect.show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notti_device);
 
@@ -140,19 +182,59 @@ public class NottiDeviceActivity extends ActionBarActivity implements ColorPicke
     }
 
     @Override
-    public void onColorChanged(int i) {
+    public void onColorChanged(final int i) {
+
         Log.i(TAG, "color changed : " +  Color.red(i) + " - " + Color.green(i) + " - " + Color.blue(i));
         if (device!=null){
-            device.setRGBColor(Color.red(i),Color.green(i),Color.blue(i));
+
+            if (!waitingForResponse) {
+
+                waitingForResponse=true;
+
+                device.setRGBColor(Color.red(i), Color.green(i), Color.blue(i), new IPushListener() {
+                    @Override
+                    public void onPushFailure() {
+                        waitingForResponse = false;
+                    }
+
+                    @Override
+                    public void onPushSuccess() {
+
+                        waitingForResponse = false;
+                    }
+                });
+            }
         }
+
     }
 
     @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+    public void onProgressChanged(SeekBar seekBar, final int progress, boolean fromUser) {
+
         Log.i(TAG,"intensity changed : " + progress);
+
         if (device!=null){
-            ColorPicker picker = (ColorPicker) findViewById(R.id.picker);
-            device.setLuminosityForColor(progress, Color.red(picker.getColor()),Color.green(picker.getColor()),Color.blue(picker.getColor()));
+
+            if (!waitingForResponse) {
+
+                waitingForResponse=true;
+
+                final ColorPicker picker = (ColorPicker) findViewById(R.id.picker);
+                device.setLuminosityForColor(progress, Color.red(picker.getColor()), Color.green(picker.getColor()), Color.blue(picker.getColor()), new IPushListener() {
+                    @Override
+                    public void onPushFailure() {
+                        waitingForResponse = false;
+                    }
+
+                    @Override
+                    public void onPushSuccess() {
+
+                        waitingForResponse = false;
+
+                    }
+                });
+
+            }
         }
     }
 
@@ -170,8 +252,30 @@ public class NottiDeviceActivity extends ActionBarActivity implements ColorPicke
     public void onClick(View v) {
         Log.i(TAG,"click on button");
         if (device!=null){
-            device.setOnOff(!state);
-            state=!state;
+
+            if (!waitingForResponse) {
+
+                waitingForResponse = true;
+                device.setOnOff(!state, new IPushListener() {
+                    @Override
+                    public void onPushFailure() {
+                        waitingForResponse = false;
+                    }
+
+                    @Override
+                    public void onPushSuccess() {
+
+                        waitingForResponse = false;
+                    }
+                });
+                state = !state;
+
+            }else{
+
+                ToggleButton onOff =(ToggleButton) findViewById(R.id.ledButton);
+                onOff.toggle();
+
+            }
         }
     }
 }

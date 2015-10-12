@@ -40,6 +40,7 @@ import java.util.UUID;
 import fr.bmartel.android.bluetooth.IBluetoothCustomManager;
 import fr.bmartel.android.bluetooth.IDevice;
 import fr.bmartel.android.bluetooth.IDeviceInitListener;
+import fr.bmartel.android.bluetooth.listener.IPushListener;
 import fr.bmartel.android.bluetooth.notti.NottiDevice;
 import fr.bmartel.android.bluetooth.shared.ActionFilterGatt;
 import fr.bmartel.android.bluetooth.shared.BluetoothConst;
@@ -224,14 +225,14 @@ public class BluetoothDeviceConn implements IBluetoothDeviceConn {
 
     @SuppressLint("NewApi")
     @Override
-    public void writeCharacteristic(String service, String charac, byte[] value) {
-        manager.writeCharacteristic(gatt.getService(UUID.fromString(service)).getCharacteristic(UUID.fromString(charac)), value, gatt);
+    public void writeCharacteristic(String service, String charac, byte[] value,IPushListener listener) {
+        manager.writeCharacteristic(charac, value, gatt,listener);
     }
 
     @SuppressLint("NewApi")
     @Override
     public void readCharacteristic(String service, String charac) {
-        manager.readCharacteristic(gatt.getService(UUID.fromString(service)).getCharacteristic(UUID.fromString(charac)), gatt);
+        manager.readCharacteristic(charac, gatt);
     }
 
     @SuppressLint("NewApi")
@@ -248,20 +249,10 @@ public class BluetoothDeviceConn implements IBluetoothDeviceConn {
 
     @SuppressLint("NewApi")
     @Override
-    public void enableGattNotifications(UUID service, UUID charac) {
+    public void enableGattNotifications(String serviceUid, String characUid) {
 
         String descriptorStr = BluetoothConst.CLIENT_CHARACTERISTIC_CONFIG;
-
-        if (gatt.getService(service)
-                .getCharacteristic(charac).getDescriptor(UUID.fromString(descriptorStr)) != null) {
-            BluetoothGattDescriptor descriptor = gatt.getService(service)
-                    .getCharacteristic(charac).getDescriptor(UUID.fromString(descriptorStr));
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            manager.writeDescriptor(descriptor, gatt);
-        } else {
-            System.out.println("error inconsistent service or descriptor");
-        }
-
+        manager.writeDescriptor(descriptorStr, gatt,BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE,serviceUid,characUid);
     }
 
     public BluetoothGatt getGatt() {

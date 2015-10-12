@@ -57,7 +57,7 @@ import fr.bmartel.android.bluetooth.shared.ActionFilterGatt;
 import fr.bmartel.android.bluetooth.shared.StableArrayAdapter;
 
 /**
- * Notti bluetooth device management main activity
+ * Dotti device management main activity
  *
  * @author Bertrand Martel
  */
@@ -104,6 +104,20 @@ public class NottiActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notti);
 
+        // Use this check to determine whether BLE is supported on the device. Then
+        // you can selectively disable BLE-related features.
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, "Bluetooth Smart is not supported on your device", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+
         final ProgressBar progress_bar = (ProgressBar) findViewById(R.id.scanningProgress);
 
         if (progress_bar != null)
@@ -119,13 +133,6 @@ public class NottiActivity extends Activity {
         if (scanText != null)
             scanText.setText("");
 
-        // Use this check to determine whether BLE is supported on the device. Then
-        // you can selectively disable BLE-related features.
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, "Bluetooth Smart is not supported on your device", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
 
         button_stop_scanning.setEnabled(false);
@@ -135,7 +142,9 @@ public class NottiActivity extends Activity {
         button_stop_scanning.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (currentService.isScanning()) {
+
+                if (currentService!=null && currentService.isScanning()) {
+
                     currentService.stopScan();
 
                     if (progress_bar != null) {
@@ -158,12 +167,39 @@ public class NottiActivity extends Activity {
             }
         });
 
-        Intent intent = new Intent(this, NottiBtService.class);
+        if (mBluetoothAdapter.isEnabled()) {
 
-        // bind the service to current activity and create it if it didnt exist before
-        startService(intent);
-        bound = bindService(intent, mServiceConnection, BIND_AUTO_CREATE);
+            Intent intent = new Intent(this, NottiBtService.class);
+
+            // bind the service to current activity and create it if it didnt exist before
+            startService(intent);
+            bound = bindService(intent, mServiceConnection, BIND_AUTO_CREATE);
+        }
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if(requestCode == REQUEST_ENABLE_BT){
+
+            if(mBluetoothAdapter.isEnabled()) {
+
+
+                Intent intent = new Intent(this, NottiBtService.class);
+
+                // bind the service to current activity and create it if it didnt exist before
+                startService(intent);
+                bound = bindService(intent, mServiceConnection, BIND_AUTO_CREATE);
+
+            } else {
+
+                Toast.makeText(this, "Bluetooth disabled", Toast.LENGTH_SHORT).show();
+
+            }
+
+        }
+    }
+
 
     /**
      * trigger a BLE scan
@@ -175,7 +211,7 @@ public class NottiActivity extends Activity {
         TextView scanText = (TextView) findViewById(R.id.scanText);
 
         if (button_stop_scanning != null && progress_bar != null && scanText != null) {
-            if (!currentService.isScanning()) {
+            if (currentService!=null && !currentService.isScanning()) {
 
                 Toast.makeText(NottiActivity.this, "Looking for new accessories", Toast.LENGTH_SHORT).show();
 
@@ -302,7 +338,7 @@ public class NottiActivity extends Activity {
 
                 Log.i(TAG, "Device connected && service discovered");
 
-                device_list_view.getChildAt(list_item_position).setBackgroundColor(Color.GREEN);
+                device_list_view.getChildAt(list_item_position).setBackgroundColor(Color.BLUE);
                 invalidateOptionsMenu();
 
                 //service has been discovered on device => you can address directly the device
