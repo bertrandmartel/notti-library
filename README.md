@@ -1,6 +1,6 @@
 # Notti Testing Android app #
 
-<i>Last update on 05/10/2015</i>
+<i>Last update on 12/10/2015</i>
 
 Notti is a small bluetooth led light with built in battery made by Witti
 
