@@ -26,7 +26,7 @@ publish {
     userOrg = 'akinaru'
     groupId = 'akinaru'
     artifactId = 'notti-library'
-    publishVersion = '0.2'
+    publishVersion = '0.21'
     desc = 'Notti Library Release'
     website = 'https://github.com/akinaru/notti-library'
 }

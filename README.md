@@ -41,7 +41,7 @@ repositories {
 ...
  
 dependencies {
-    compile 'akinaru:notti-library:0.2'
+    compile 'akinaru:notti-library:0.21'
 }
 ```
 
