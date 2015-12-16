@@ -25,7 +25,6 @@ package fr.bmartel.android.notti.service;
 
 import android.app.Service;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
@@ -34,7 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fr.bmartel.android.notti.service.bluetooth.BluetoothCustomManager;
-import fr.bmartel.android.notti.service.bluetooth.IScanListener;
 import fr.bmartel.android.notti.service.bluetooth.connection.IBluetoothDeviceConn;
 
 /**
@@ -87,16 +85,12 @@ public class NottiBtService extends Service {
         btManager.stopScan();
     }
 
-    public void connect(String deviceAddress, Context context) {
-        btManager.connect(deviceAddress, context);
+    public void connect(String deviceAddress) {
+        btManager.connect(deviceAddress);
     }
 
-    public void startScan(boolean scan) {
-        btManager.scanLeDevice(scan);
-    }
-
-    public void removeScanListeners() {
-        btManager.removeScanListeners();
+    public boolean startScan() {
+        return btManager.scanLeDevice();
     }
 
     public void clearScanningList() {
@@ -111,11 +105,8 @@ public class NottiBtService extends Service {
         btManager.disconnectAll();
     }
 
-    public void addScanListener(IScanListener listener) {
-        btManager.addScanListListener(listener);
-    }
-
     public HashMap<String, IBluetoothDeviceConn> getConnectionList() {
         return btManager.getConnectionList();
     }
+
 }

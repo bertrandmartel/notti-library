@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import fr.bmartel.android.notti.service.bluetooth.connection.IBluetoothDeviceConn;
+import fr.bmartel.android.notti.service.bluetooth.listener.IConnectionListener;
 import fr.bmartel.android.notti.service.bluetooth.listener.IPushListener;
 import fr.bmartel.android.notti.service.utils.ManualResetEvent;
 

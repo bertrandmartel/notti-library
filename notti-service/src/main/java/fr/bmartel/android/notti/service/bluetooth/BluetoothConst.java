@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p/>
  * Copyright (c) 2015 Bertrand Martel
- *
+ * <p/>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p/>
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * <p/>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,33 +23,16 @@
  */
 package fr.bmartel.android.notti.service.bluetooth;
 
-import android.bluetooth.BluetoothGattCharacteristic;
-
 /**
- * Characteritic listener template to be used in device implementation
+ * Some Bluetooth specific constants
  *
  * @author Bertrand Martel
  */
-public interface ICharacteristicListener {
+public class BluetoothConst {
 
-    /**
-     * called when onCharacteristicRead() gatt callback has been received
-     *
-     * @param charac characteristic that has been read
-     */
-    public void onCharacteristicReadReceived(BluetoothGattCharacteristic charac);
+    public final static String CLIENT_CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 
-    /**
-     * called chane onCharacteristicChange() gatt callback has been received
-     *
-     * @param charac characteristic whose value has changed
-     */
-    public void onCharacteristicChangeReceived(BluetoothGattCharacteristic charac);
+    public final static String DEVICE_ADDRESS = "address";
 
-    /**
-     * called when onCharacteristicWrite() gatt callback is received
-     *
-     * @param charac
-     */
-    public void onCharacteristicWriteReceived(BluetoothGattCharacteristic charac);
+    public final static String DEVICE_NAME = "deviceName";
 }

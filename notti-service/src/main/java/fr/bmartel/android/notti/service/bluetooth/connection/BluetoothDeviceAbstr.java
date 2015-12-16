@@ -27,7 +27,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 
 import java.util.UUID;
 
-import fr.bmartel.android.notti.service.bluetooth.ICharacteristicListener;
+import fr.bmartel.android.notti.service.bluetooth.listener.ICharacteristicListener;
 import fr.bmartel.android.notti.service.bluetooth.IDevice;
 
 /**

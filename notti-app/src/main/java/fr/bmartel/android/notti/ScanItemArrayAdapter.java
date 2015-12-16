@@ -1,6 +1,5 @@
 package fr.bmartel.android.notti;
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,17 +10,19 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.bmartel.android.notti.service.bluetooth.events.BluetoothObject;
+
 /**
  * @author Bertrand Martel
  */
-public class ScanItemArrayAdapter extends ArrayAdapter<BluetoothDevice> {
+public class ScanItemArrayAdapter extends ArrayAdapter<BluetoothObject> {
 
-    List<BluetoothDevice> scanningList = new ArrayList<>();
+    List<BluetoothObject> scanningList = new ArrayList<>();
 
     private static LayoutInflater inflater = null;
 
     public ScanItemArrayAdapter(Context context, int textViewResourceId,
-                                List<BluetoothDevice> objects) {
+                                List<BluetoothObject> objects) {
         super(context, textViewResourceId, objects);
 
         this.scanningList = objects;
@@ -45,8 +46,8 @@ public class ScanItemArrayAdapter extends ArrayAdapter<BluetoothDevice> {
                 holder = (ViewHolder) vi.getTag();
             }
 
-            holder.deviceAddress.setText(scanningList.get(position).getAddress());
-            holder.deviceName.setText(scanningList.get(position).getName());
+            holder.deviceAddress.setText(scanningList.get(position).getDeviceAddress());
+            holder.deviceName.setText(scanningList.get(position).getDeviceName());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -54,7 +55,7 @@ public class ScanItemArrayAdapter extends ArrayAdapter<BluetoothDevice> {
         return vi;
     }
 
-    public List<BluetoothDevice> getDeviceList() {
+    public List<BluetoothObject> getDeviceList() {
         return scanningList;
     }
 

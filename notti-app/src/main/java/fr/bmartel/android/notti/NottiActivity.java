@@ -26,7 +26,6 @@ package fr.bmartel.android.notti;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -46,14 +45,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 
 import fr.bmartel.android.notti.service.NottiBtService;
-import fr.bmartel.android.notti.service.bluetooth.IScanListener;
-import fr.bmartel.android.notti.service.bluetooth.shared.GattEvents;
+import fr.bmartel.android.notti.service.bluetooth.events.BluetoothEvents;
+import fr.bmartel.android.notti.service.bluetooth.events.BluetoothObject;
 
 /**
  * Dotti device management main activity
@@ -238,7 +234,7 @@ public class NottiActivity extends Activity {
 
                 currentService.disconnectall();
 
-                currentService.startScan(true);
+                currentService.startScan();
 
             } else {
                 Toast.makeText(NottiActivity.this, "Scanning already engaged...", Toast.LENGTH_SHORT).show();
@@ -258,11 +254,6 @@ public class NottiActivity extends Activity {
     public void onResume() {
         super.onResume();
         toSecondLevel = false;
-
-        if (currentService != null) {
-
-            initializeScanListener();
-        }
     }
 
     @Override
@@ -297,7 +288,6 @@ public class NottiActivity extends Activity {
         }
 
         if (currentService != null) {
-            currentService.removeScanListeners();
             if (currentService.isScanning())
                 currentService.stopScan();
         }
@@ -313,78 +303,114 @@ public class NottiActivity extends Activity {
         }
     }
 
-    // Handles various events fired by the Service.
-    // ACTION_GATT_CONNECTED: connected to a GATT server.
-    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
-    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
-    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
-    //                        or notification operations.
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 
             final String action = intent.getAction();
 
-            if (GattEvents.ACTION_GATT_CONNECTED.equals(action)) {
+            if (BluetoothEvents.BT_EVENT_SCAN_START.equals(action)) {
 
-                Log.i(TAG, "Device connected");
+                Log.i(TAG, "Scan has started");
 
-            } else if (GattEvents.ACTION_GATT_DISCONNECTED.equals(action)) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        final Button button_start_pairing = (Button) findViewById(R.id.scanning_button);
+                        button_start_pairing.setEnabled(false);
+                    }
+                });
+            } else if (BluetoothEvents.BT_EVENT_SCAN_END.equals(action)) {
+
+                Log.i(TAG, "Scan has ended");
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        final Button button_stop_scanning = (Button) findViewById(R.id.stop_scanning_button);
+                        final ProgressBar progress_bar = (ProgressBar) findViewById(R.id.scanningProgress);
+                        final TextView scanText = (TextView) findViewById(R.id.scanText);
+
+                        Toast.makeText(NottiActivity.this, "End of scanning...", Toast.LENGTH_SHORT).show();
+
+                        if (button_stop_scanning != null)
+                            button_stop_scanning.setEnabled(false);
+                        if (progress_bar != null)
+                            progress_bar.setEnabled(false);
+                        if (scanText != null)
+                            scanText.setText("");
+
+                        final Button button_start_pairing = (Button) findViewById(R.id.scanning_button);
+                        button_start_pairing.setEnabled(true);
+                    }
+                });
+
+            } else if (BluetoothEvents.BT_EVENT_DEVICE_DISCOVERED.equals(action)) {
+
+                Log.i(TAG, "New device has been discovered");
+
+                final BluetoothObject btDevice = BluetoothObject.parseArrayList(intent);
+
+                if (btDevice != null) {
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            if (scanningAdapter != null) {
+                                scanningAdapter.add(btDevice);
+                                scanningAdapter.notifyDataSetChanged();
+                            }
+                        }
+                    });
+                }
+
+            } else if (BluetoothEvents.BT_EVENT_DEVICE_DISCONNECTED.equals(action)) {
 
                 Log.i(TAG, "Device disconnected");
 
-                if (scanningListView != null && scanningListView.getChildAt(list_item_position) != null) {
-                    scanningListView.getChildAt(list_item_position).setBackgroundColor(Color.TRANSPARENT);
-                }
+                BluetoothObject btDevice = BluetoothObject.parseArrayList(intent);
 
-                invalidateOptionsMenu();
+                if (btDevice != null) {
 
-                if (dialog != null) {
+                    if (scanningListView != null && scanningListView.getChildAt(list_item_position) != null) {
+                        scanningListView.getChildAt(list_item_position).setBackgroundColor(Color.TRANSPARENT);
+                    }
 
-                    dialog.cancel();
-                    dialog = null;
+                    invalidateOptionsMenu();
 
-                }
+                    if (dialog != null) {
 
-            } else if (GattEvents.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-
-                Log.i(TAG, "Device connected && service discovered");
-
-                scanningListView.getChildAt(list_item_position).setBackgroundColor(Color.BLUE);
-                invalidateOptionsMenu();
-
-                //service has been discovered on device => you can address directly the device
-
-                ArrayList<String> actionsStr = intent.getStringArrayListExtra("");
-                if (actionsStr.size() > 0) {
-                    try {
-                        JSONObject mainObject = new JSONObject(actionsStr.get(0));
-                        if (mainObject.has("address") && mainObject.has("deviceName") && mainObject.has("deviceName")) {
-
-                            Log.i(TAG, "Setting for device = > " + mainObject.getString("address") + " - " + mainObject.getString("deviceName") + " - " + mainObject.getString("deviceName"));
-
-                            if (dialog != null) {
-                                dialog.cancel();
-                                dialog = null;
-                            }
-
-                            Intent intentDevice = new Intent(NottiActivity.this, NottiDeviceActivity.class);
-                            intentDevice.putExtra("deviceAddr", mainObject.getString("address"));
-                            intentDevice.putExtra("deviceName", mainObject.getString("deviceName"));
-                            toSecondLevel = true;
-                            startActivity(intentDevice);
-
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                        dialog.cancel();
+                        dialog = null;
                     }
                 }
 
-            } else if (GattEvents.ACTION_DATA_AVAILABLE.equals(action)) {
+            } else if (BluetoothEvents.BT_EVENT_DEVICE_CONNECTED.equals(action)) {
 
-                if (intent.getStringArrayListExtra("STATUS") != null) {
-                    ArrayList<String> values = intent.getStringArrayListExtra("STATUS");
+                Log.i(TAG, "Device connected");
 
+                BluetoothObject btDevice = BluetoothObject.parseArrayList(intent);
+
+                if (btDevice != null) {
+
+                    scanningListView.getChildAt(list_item_position).setBackgroundColor(Color.BLUE);
+                    invalidateOptionsMenu();
+
+                    Log.i(TAG, "Setting for device = > " + btDevice.getDeviceAddress() + " - " + btDevice.getDeviceName());
+
+                    if (dialog != null) {
+                        dialog.cancel();
+                        dialog = null;
+                    }
+
+                    Intent intentDevice = new Intent(NottiActivity.this, NottiDeviceActivity.class);
+                    intentDevice.putExtra("deviceAddr", btDevice.getDeviceAddress());
+                    intentDevice.putExtra("deviceName", btDevice.getDeviceName());
+                    toSecondLevel = true;
+                    startActivity(intentDevice);
                 }
             }
         }
@@ -402,11 +428,9 @@ public class NottiActivity extends Activity {
 
             currentService = ((NottiBtService.LocalBinder) service).getService();
 
-            initializeScanListener();
-
             scanningListView = (ListView) findViewById(R.id.listView);
 
-            final ArrayList<BluetoothDevice> list = new ArrayList<>();
+            final ArrayList<BluetoothObject> list = new ArrayList<>();
 
             scanningAdapter = new ScanItemArrayAdapter(NottiActivity.this,
                     android.R.layout.simple_list_item_1, list);
@@ -437,7 +461,7 @@ public class NottiActivity extends Activity {
                     }
 
                     /*connect to bluetooth gatt server on the device*/
-                    deviceAddress = scanningAdapter.getItem(position).getAddress();
+                    deviceAddress = scanningAdapter.getItem(position).getDeviceAddress();
 
                     list_item_position = position;
 
@@ -446,7 +470,7 @@ public class NottiActivity extends Activity {
 
                         dialog = ProgressDialog.show(NottiActivity.this, "", "Connecting ...", true);
 
-                        currentService.connect(deviceAddress, NottiActivity.this);
+                        currentService.connect(deviceAddress);
                     } else {
 
                         Intent intentDevice = new Intent(NottiActivity.this, NottiDeviceActivity.class);
@@ -469,76 +493,18 @@ public class NottiActivity extends Activity {
 
     };
 
-    private void initializeScanListener() {
-
-        currentService.addScanListener(new IScanListener() {
-
-            @Override
-            public void onNewDeviceFound(final BluetoothDevice device) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        if (scanningAdapter != null) {
-                            scanningAdapter.add(device);
-                            scanningAdapter.notifyDataSetChanged();
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onScanStart() {
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        final Button button_start_pairing = (Button) findViewById(R.id.scanning_button);
-                        button_start_pairing.setEnabled(false);
-                    }
-                });
-            }
-
-            @Override
-            public void onScanEnd() {
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        final Button button_stop_scanning = (Button) findViewById(R.id.stop_scanning_button);
-                        final ProgressBar progress_bar = (ProgressBar) findViewById(R.id.scanningProgress);
-                        final TextView scanText = (TextView) findViewById(R.id.scanText);
-
-                        Toast.makeText(NottiActivity.this, "End of scanning...", Toast.LENGTH_SHORT).show();
-
-                        if (button_stop_scanning != null)
-                            button_stop_scanning.setEnabled(false);
-                        if (progress_bar != null)
-                            progress_bar.setEnabled(false);
-                        if (scanText != null)
-                            scanText.setText("");
-
-                        final Button button_start_pairing = (Button) findViewById(R.id.scanning_button);
-                        button_start_pairing.setEnabled(true);
-                    }
-                });
-            }
-        });
-    }
-
     /**
      * add filter to intent to receive notification from bluetooth service
      *
      * @return intent filter
      */
     private static IntentFilter makeGattUpdateIntentFilter() {
-        final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(GattEvents.ACTION_GATT_CONNECTED);
-        intentFilter.addAction(GattEvents.ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(GattEvents.ACTION_GATT_SERVICES_DISCOVERED);
-        intentFilter.addAction(GattEvents.ACTION_DATA_AVAILABLE);
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothEvents.BT_EVENT_SCAN_START);
+        intentFilter.addAction(BluetoothEvents.BT_EVENT_SCAN_END);
+        intentFilter.addAction(BluetoothEvents.BT_EVENT_DEVICE_DISCOVERED);
+        intentFilter.addAction(BluetoothEvents.BT_EVENT_DEVICE_CONNECTED);
+        intentFilter.addAction(BluetoothEvents.BT_EVENT_DEVICE_DISCONNECTED);
         return intentFilter;
     }
 }

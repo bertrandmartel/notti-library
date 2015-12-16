@@ -35,6 +35,9 @@ import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 
 import fr.bmartel.android.notti.service.bluetooth.connection.BluetoothDeviceConn;
 import fr.bmartel.android.notti.service.bluetooth.connection.IBluetoothDeviceConn;
+import fr.bmartel.android.notti.service.bluetooth.events.BluetoothEvents;
 import fr.bmartel.android.notti.service.bluetooth.listener.IPushListener;
 import fr.bmartel.android.notti.service.utils.ManualResetEvent;
 
@@ -72,8 +76,6 @@ public class BluetoothCustomManager implements IBluetoothCustomManager {
 
     // set time unit in seconds
     private static final TimeUnit KEEP_ALIVE_TIME_UNIT;
-
-    private ArrayList<IScanListener> scanListListeners = new ArrayList<>();
 
     static {
 
@@ -166,20 +168,22 @@ public class BluetoothCustomManager implements IBluetoothCustomManager {
 
                     scanningList.put(device.getAddress(), device);
 
-                    for (int i = 0; i < scanListListeners.size(); i++) {
-                        scanListListeners.get(i).onNewDeviceFound(device);
+                    try {
+                        JSONObject object = new JSONObject();
+                        object.put("address", device.getAddress());
+                        object.put("deviceName", device.getName());
+
+                        ArrayList<String> deviceInfo = new ArrayList<>();
+                        deviceInfo.add(object.toString());
+
+                        broadcastUpdateStringList(BluetoothEvents.BT_EVENT_DEVICE_DISCOVERED, deviceInfo);
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 }
             }
         };
-    }
-
-    public void removeScanListeners() {
-        scanListListeners.clear();
-    }
-
-    public void addScanListListener(IScanListener listener) {
-        scanListListeners.add(listener);
     }
 
     /**
@@ -191,16 +195,13 @@ public class BluetoothCustomManager implements IBluetoothCustomManager {
 
     /**
      * Scan new Bluetooth device
-     *
-     * @param enable true if bluetooth start scanning / stop scanning if false
      */
     @SuppressLint("NewApi")
-    public void scanLeDevice(final boolean enable) {
-        if (enable) {
-            //notify start of scan
-            for (int i = 0; i < scanListListeners.size(); i++) {
-                scanListListeners.get(i).onScanStart();
-            }
+    public boolean scanLeDevice() {
+
+        if (!scanning) {
+
+            broadcastUpdate(BluetoothEvents.BT_EVENT_SCAN_START);
 
             // Stops scanning after a pre-defined scan period.
             mHandler.postDelayed(
@@ -209,9 +210,7 @@ public class BluetoothCustomManager implements IBluetoothCustomManager {
                         public void run() {
                             if (scanning) {
                                 //notify end of scan
-                                for (int i = 0; i < scanListListeners.size(); i++) {
-                                    scanListListeners.get(i).onScanEnd();
-                                }
+                                broadcastUpdate(BluetoothEvents.BT_EVENT_SCAN_END);
                                 scanning = false;
                                 mBluetoothAdapter.stopLeScan(scanCallback);
                             }
@@ -219,11 +218,10 @@ public class BluetoothCustomManager implements IBluetoothCustomManager {
                     }, SCAN_PERIOD);
 
             scanning = true;
-            mBluetoothAdapter.startLeScan(scanCallback);
-        } else {
-            scanning = false;
-            mBluetoothAdapter.stopLeScan(scanCallback);
+
+            return mBluetoothAdapter.startLeScan(scanCallback);
         }
+        return false;
     }
 
     /**
@@ -235,9 +233,7 @@ public class BluetoothCustomManager implements IBluetoothCustomManager {
         scanning = false;
         mBluetoothAdapter.stopLeScan(scanCallback);
         //notify end of scan
-        for (int i = 0; i < scanListListeners.size(); i++) {
-            scanListListeners.get(i).onScanEnd();
-        }
+        broadcastUpdate(BluetoothEvents.BT_EVENT_SCAN_END);
     }
 
     public boolean isScanning() {
@@ -248,7 +244,7 @@ public class BluetoothCustomManager implements IBluetoothCustomManager {
      * Connect to device's GATT server
      */
     @SuppressLint("NewApi")
-    public boolean connect(String address, Context context) {
+    public boolean connect(String address) {
         if (mBluetoothAdapter == null || address == null) {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
@@ -451,10 +447,10 @@ public class BluetoothCustomManager implements IBluetoothCustomManager {
             Map.Entry<String, IBluetoothDeviceConn> pair = (Map.Entry) it.next();
             pair.getValue().disconnect();
         }
-
     }
 
     public HashMap<String, BluetoothDevice> getScanningList() {
         return scanningList;
     }
+
 }

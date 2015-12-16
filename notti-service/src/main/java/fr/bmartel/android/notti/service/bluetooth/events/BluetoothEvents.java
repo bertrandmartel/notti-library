@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p/>
  * Copyright (c) 2015 Bertrand Martel
- *
+ * <p/>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * <p/>
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- *
+ * <p/>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,37 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package fr.bmartel.android.notti.service.bluetooth;
-
-import android.bluetooth.BluetoothGattCharacteristic;
-
-import fr.bmartel.android.notti.service.bluetooth.listener.IDeviceInitListener;
+package fr.bmartel.android.notti.service.bluetooth.events;
 
 /**
- * Generic template for bluetooth device
+ * Filter action broadcasted from bluetooh custom service
  *
  * @author Bertrand Martel
  */
-public interface IDevice {
+public class BluetoothEvents {
 
-    /**
-     * check if device is fully intitialized
-     * @return
-     */
-    public boolean isInit();
+    public final static String BT_EVENT_DEVICE_DISCONNECTED = "fr.bmartel.android.notti.service.bluetooth.BT_EVENT_DEVICE_DISCONNECTED";
+    public final static String BT_EVENT_DEVICE_CONNECTED = "fr.bmartel.android.notti.service.bluetooth.BT_EVENT_DEVICE_CONNECTED";
+    public final static String BT_EVENT_SCAN_START = "fr.bmartel.android.notti.service.bluetooth.BT_EVENT_SCAN_START";
+    public final static String BT_EVENT_SCAN_END = "fr.bmartel.android.notti.service.bluetooth.BT_EVENT_SCAN_END";
+    public final static String BT_EVENT_DEVICE_DISCOVERED = "fr.bmartel.android.notti.service.bluetooth.BT_EVENT_DEVICE_DISCOVERED";
 
-    /**
-     * add a device initialization listener
-     *
-     * @param listener
-     */
-    public void addInitListener(IDeviceInitListener listener);
-
-    public void init();
-
-    public void notifyCharacteristicReadReceived(BluetoothGattCharacteristic characteristic);
-
-    public void notifyCharacteristicChangeReceived(BluetoothGattCharacteristic characteristic);
-
-    public void notifyCharacteristicWriteReceived(BluetoothGattCharacteristic characteristic);
 }

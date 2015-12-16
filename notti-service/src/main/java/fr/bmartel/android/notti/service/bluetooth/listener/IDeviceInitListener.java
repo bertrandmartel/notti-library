@@ -21,37 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package fr.bmartel.android.notti.service.bluetooth;
-
-import android.bluetooth.BluetoothGattCharacteristic;
-
-import fr.bmartel.android.notti.service.bluetooth.listener.IDeviceInitListener;
+package fr.bmartel.android.notti.service.bluetooth.listener;
 
 /**
- * Generic template for bluetooth device
+ * Listener called when bluetooth device is fully initialized and can be displayed/used for end user interface
  *
- * @author Bertrand Martel
+ * @author  Bertrand Martel
  */
-public interface IDevice {
+public interface IDeviceInitListener {
 
     /**
-     * check if device is fully intitialized
-     * @return
+     * called when device is fully initialized
      */
-    public boolean isInit();
+    public void onInit();
 
-    /**
-     * add a device initialization listener
-     *
-     * @param listener
-     */
-    public void addInitListener(IDeviceInitListener listener);
-
-    public void init();
-
-    public void notifyCharacteristicReadReceived(BluetoothGattCharacteristic characteristic);
-
-    public void notifyCharacteristicChangeReceived(BluetoothGattCharacteristic characteristic);
-
-    public void notifyCharacteristicWriteReceived(BluetoothGattCharacteristic characteristic);
 }

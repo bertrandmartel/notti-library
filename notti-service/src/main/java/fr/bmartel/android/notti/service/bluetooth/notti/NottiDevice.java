@@ -30,8 +30,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import fr.bmartel.android.notti.service.bluetooth.ICharacteristicListener;
-import fr.bmartel.android.notti.service.bluetooth.IDeviceInitListener;
+import fr.bmartel.android.notti.service.bluetooth.listener.ICharacteristicListener;
+import fr.bmartel.android.notti.service.bluetooth.listener.IDeviceInitListener;
 import fr.bmartel.android.notti.service.bluetooth.connection.BluetoothDeviceAbstr;
 import fr.bmartel.android.notti.service.bluetooth.connection.IBluetoothDeviceConn;
 import fr.bmartel.android.notti.service.bluetooth.listener.IPushListener;

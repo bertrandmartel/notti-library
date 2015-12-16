@@ -37,13 +37,13 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import fr.bmartel.android.notti.service.bluetooth.BluetoothConst;
 import fr.bmartel.android.notti.service.bluetooth.IBluetoothCustomManager;
 import fr.bmartel.android.notti.service.bluetooth.IDevice;
-import fr.bmartel.android.notti.service.bluetooth.IDeviceInitListener;
+import fr.bmartel.android.notti.service.bluetooth.events.BluetoothEvents;
+import fr.bmartel.android.notti.service.bluetooth.listener.IDeviceInitListener;
 import fr.bmartel.android.notti.service.bluetooth.listener.IPushListener;
 import fr.bmartel.android.notti.service.bluetooth.notti.NottiDevice;
-import fr.bmartel.android.notti.service.bluetooth.shared.BluetoothConst;
-import fr.bmartel.android.notti.service.bluetooth.shared.GattEvents;
 
 /**
  * Bluetooth device connection management
@@ -93,21 +93,30 @@ public class BluetoothDeviceConn implements IBluetoothDeviceConn {
             public void onConnectionStateChange(BluetoothGatt gatt, int status,
                                                 int newState) {
 
-                String intentAction;
-
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
 
-                    intentAction = GattEvents.ACTION_GATT_CONNECTED;
                     Log.i(TAG, "Connected to GATT server.");
                     Log.i(TAG, "Attempting to start service discovery:" + gatt.discoverServices());
 
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
 
                     connected = false;
-                    intentAction = GattEvents.ACTION_GATT_DISCONNECTED;
                     Log.i(TAG, "Disconnected from GATT server.");
-                    manager.broadcastUpdate(GattEvents.ACTION_GATT_DISCONNECTED);
 
+                    try {
+                        JSONObject object = new JSONObject();
+                        object.put(BluetoothConst.DEVICE_ADDRESS, getAddress());
+                        object.put(BluetoothConst.DEVICE_NAME, getDeviceName());
+
+                        ArrayList<String> values = new ArrayList<String>();
+                        values.add(object.toString());
+
+                        //when device is fully intitialized broadcast service discovery
+                        manager.broadcastUpdateStringList(BluetoothEvents.BT_EVENT_DEVICE_DISCONNECTED, values);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    
                     if (BluetoothDeviceConn.this.gatt != null) {
                         BluetoothDeviceConn.this.gatt.close();
                     }
@@ -130,20 +139,16 @@ public class BluetoothDeviceConn implements IBluetoothDeviceConn {
                                 @Override
                                 public void onInit() {
                                     try {
-
-                                        String name = "";
-
                                         JSONObject object = new JSONObject();
-                                        object.put("address", getAddress());
-                                        object.put("deviceName", getDeviceName());
+                                        object.put(BluetoothConst.DEVICE_ADDRESS, getAddress());
+                                        object.put(BluetoothConst.DEVICE_NAME, getDeviceName());
 
                                         ArrayList<String> values = new ArrayList<String>();
                                         values.add(object.toString());
 
                                         connected = true;
-
                                         //when device is fully intitialized broadcast service discovery
-                                        manager.broadcastUpdateStringList(GattEvents.ACTION_GATT_SERVICES_DISCOVERED, values);
+                                        manager.broadcastUpdateStringList(BluetoothEvents.BT_EVENT_DEVICE_CONNECTED, values);
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }

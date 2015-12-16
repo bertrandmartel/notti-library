@@ -21,22 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package fr.bmartel.android.notti.service.bluetooth;
+package fr.bmartel.android.notti.service.bluetooth.listener;
+
+import android.bluetooth.BluetoothGattCharacteristic;
 
 /**
- * Generic interface for custom bluetooth manager
+ * Characteritic listener template to be used in device implementation
  *
- * @author
- *      Bertrand Martel
+ * @author Bertrand Martel
  */
-public interface IBluetoothManagerEventListener {
+public interface ICharacteristicListener {
 
     /**
-     * called when Bluetooth adapter is not enabled on this Android device or is null => you must check for Android SDK support for this Android API
+     * called when onCharacteristicRead() gatt callback has been received
+     *
+     * @param charac characteristic that has been read
      */
-    public void onBluetoothAdapterNotEnabled();
+    public void onCharacteristicReadReceived(BluetoothGattCharacteristic charac);
 
-    public void onEndOfScan();
+    /**
+     * called chane onCharacteristicChange() gatt callback has been received
+     *
+     * @param charac characteristic whose value has changed
+     */
+    public void onCharacteristicChangeReceived(BluetoothGattCharacteristic charac);
 
-    public void onStartOfScan();
+    /**
+     * called when onCharacteristicWrite() gatt callback is received
+     *
+     * @param charac
+     */
+    public void onCharacteristicWriteReceived(BluetoothGattCharacteristic charac);
 }
