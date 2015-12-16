@@ -4,16 +4,18 @@
 [![Download](https://api.bintray.com/packages/akinaru/maven/notti-library/images/download.svg) ](https://bintray.com/akinaru/maven/notti-library/_latestVersion)
 [![License](http://img.shields.io/:license-mit-blue.svg)](LICENSE.md)
 
-Notti library is an embedded Android service for controlling Notti Bluetooth devices.
+Notti library is an embedded Android service for controlling Notti Bluetooth devices
 
-Notti is a small bluetooth led light with built in battery made by Witti.
+<hr/>
+
+Notti is a small bluetooth led light with built in battery made by Witti
+
+![screenshot](img/device.png)
 
 This project is composed of two modules :
 
 * Android Service, exposing APIs to scan,connect and control a Notti device
 * Android Application which control Notti through service APIs
-
-![screenshot](https://raw.github.com/akinaru/notti-bluetooth-android/master/device.png)
 
 ## Notti Service
 
@@ -235,7 +237,8 @@ private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
 			BluetoothObject btDevice = BluetoothObject.parseArrayList(intent);
 
 			if (btDevice != null) {
-				Log.i("notti-app", "New device has been discovered : " + btDevice.getDeviceName() + " - " + btDevice.getDeviceAddress());
+				Log.i("notti-app", "New device has been discovered : " + 
+					btDevice.getDeviceName() + " - " + btDevice.getDeviceAddress());
 			}
 
 		} else if (BluetoothEvents.BT_EVENT_DEVICE_CONNECTED.equals(action)) {
@@ -243,7 +246,8 @@ private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
 			BluetoothObject btDevice = BluetoothObject.parseArrayList(intent);
 
 			if (btDevice != null) {
-				Log.i("notti-app", "Device connected : " + btDevice.getDeviceName() + " - " + btDevice.getDeviceAddress());
+				Log.i("notti-app", "Device connected : " + 
+					btDevice.getDeviceName() + " - " + btDevice.getDeviceAddress());
 			}
 
 		} else if (BluetoothEvents.BT_EVENT_DEVICE_DISCONNECTED.equals(action)) {
@@ -251,7 +255,8 @@ private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
 			BluetoothObject btDevice = BluetoothObject.parseArrayList(intent);
 
 			if (btDevice != null) {
-				Log.i("notti-app", "Device disconnected : " + btDevice.getDeviceName() + " - " + btDevice.getDeviceAddress());
+				Log.i("notti-app", "Device disconnected : " + 
+					btDevice.getDeviceName() + " - " + btDevice.getDeviceAddress());
 			}
 
 		} 
@@ -266,7 +271,7 @@ You can parse device name and device address with `BluetoothObject` class as fea
 
 This Android application bounds to Notti service to control your device(s)
 
-You can dot the following :
+You can do the following :
 
 * scan network looking for your Notti devices
 * connect to your devices,
@@ -282,4 +287,4 @@ This project require Android SDK lvl17+
 
 ## Screenshots
 
-![screenshot](https://raw.github.com/akinaru/notti-bluetooth-android/master/screenshot.png)
+![screenshot](img/screenshot.png)
