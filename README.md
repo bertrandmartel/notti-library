@@ -29,7 +29,21 @@ Android service that manage your Notti bluetooth device(s) through BLE GATT inte
 
 ## Include into your project
 
-come later
+Grab from Bintray maven repository :
+
+```
+repositories {
+    maven {
+        url 'https://dl.bintray.com/akinaru/maven/'
+    }
+}
+ 
+...
+ 
+dependencies {
+    compile 'akinaru:notti-library:0.2'
+}
+```
 
 ## Bind and/or Start Notti service
 

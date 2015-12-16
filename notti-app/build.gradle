@@ -22,5 +22,6 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.larswerkman:HoloColorPicker:1.5'
-    compile project(':notti-service')
+    //compile project(':notti-service')
+    compile 'akinaru:notti-library:0.2'
 }
