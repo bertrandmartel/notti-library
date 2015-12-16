@@ -1,5 +1,8 @@
 # Notti Android service #
 
+[![Build Status](https://travis-ci.org/akinaru/notti-library.svg)](https://travis-ci.org/akinaru/notti-library)
+[![License](http://img.shields.io/:license-mit-blue.svg)](LICENSE.md)
+
 Notti is a small bluetooth led light with built in battery made by <a href="http://wittidesign.com/en/notti/">Witti</a>
 
 This project is composed of two modules :
