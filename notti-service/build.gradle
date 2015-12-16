@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'bintray-release'
 
 android {
     compileSdkVersion 22
@@ -20,4 +21,12 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+publish {
+    userOrg = 'akinaru'
+    groupId = 'akinaru'
+    artifactId = 'notti-library'
+    publishVersion = '0.2'
+    desc = 'Notti Library Release'
+    website = 'https://github.com/akinaru/notti-library'
 }
