@@ -14,9 +14,6 @@ buildscript {
 
 allprojects {
     repositories {
-        maven {
-            url 'https://dl.bintray.com/akinaru/maven/'
-        }
         jcenter()
     }
 }

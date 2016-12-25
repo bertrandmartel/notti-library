@@ -23,10 +23,10 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
 publish {
-    userOrg = 'akinaru'
-    groupId = 'akinaru'
+    userOrg = 'bertrandmartel'
+    groupId = 'bertrandmartel'
     artifactId = 'notti-library'
     publishVersion = '0.21'
     desc = 'Notti Library Release'
-    website = 'https://github.com/akinaru/notti-library'
+    website = 'https://github.com/bertrandmartel/notti-library'
 }

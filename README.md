@@ -1,7 +1,7 @@
 # Notti Android library #
 
-[![Build Status](https://travis-ci.org/akinaru/notti-library.svg)](https://travis-ci.org/akinaru/notti-library)
-[![Download](https://api.bintray.com/packages/akinaru/maven/notti-library/images/download.svg) ](https://bintray.com/akinaru/maven/notti-library/_latestVersion)
+[![Build Status](https://travis-ci.org/bertrandmartel/notti-library.svg)](https://travis-ci.org/bertrandmartel/notti-library)
+[![Download](https://api.bintray.com/packages/bertrandmartel/maven/notti-library/images/download.svg) ](https://bintray.com/bertrandmartel/maven/notti-library/_latestVersion)
 [![License](http://img.shields.io/:license-mit-blue.svg)](LICENSE.md)
 
 Notti library is an embedded Android service for controlling Notti Bluetooth devices
@@ -32,7 +32,7 @@ Android service that manage your Notti bluetooth device(s) through BLE GATT inte
 Grab from Bintray maven repository :
 
 ```
-compile 'akinaru:notti-library:0.21'
+compile 'fr.bmartel:notti-library:0.21'
 ```
 
 ## Bind and/or Start Notti service
