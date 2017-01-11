@@ -12,6 +12,9 @@ android {
         versionCode 1
         versionName "0.21"
     }
+    lintOptions {
+        abortOnError false
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -49,7 +52,7 @@ bintray {
         issueTrackerUrl = 'https://github.com/bertrandmartel/notti-library/issues'
         vcsUrl = gitUrl
         licenses = ['MIT']
-        labels = ['notti','iot']
+        labels = ['notti', 'iot']
         publicDownloadNumbers = true
 
         version {
