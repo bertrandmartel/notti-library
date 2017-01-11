@@ -1,7 +1,7 @@
 # Notti Android library #
 
 [![Build Status](https://travis-ci.org/bertrandmartel/notti-library.svg)](https://travis-ci.org/bertrandmartel/notti-library)
-[![Download](https://api.bintray.com/packages/bertrandmartel/maven/notti-library/images/download.svg) ](https://bintray.com/bertrandmartel/maven/notti-library/_latestVersion)
+[![Download](https://api.bintray.com/packages/bertrandmartel/maven/notti-service/images/download.svg) ](https://bintray.com/bertrandmartel/maven/notti-service/_latestVersion)
 [![License](http://img.shields.io/:license-mit-blue.svg)](LICENSE.md)
 
 Notti library is an embedded Android service for controlling Notti Bluetooth devices
