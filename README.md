@@ -32,7 +32,7 @@ Android service that manage your Notti bluetooth device(s) through BLE GATT inte
 Grab from Bintray maven repository :
 
 ```
-compile 'fr.bmartel:notti-library:0.21'
+compile 'fr.bmartel:notti-service:0.21'
 ```
 
 ## Bind and/or Start Notti service

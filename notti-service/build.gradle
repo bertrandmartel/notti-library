@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
-apply plugin: 'bintray-release'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
 
 android {
     compileSdkVersion 22
@@ -9,7 +10,7 @@ android {
         minSdkVersion 17
         targetSdkVersion 22
         versionCode 1
-        versionName "0.2"
+        versionName "0.21"
     }
     buildTypes {
         release {
@@ -22,11 +23,103 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
-publish {
-    userOrg = 'bertrandmartel'
-    groupId = 'bertrandmartel'
-    artifactId = 'notti-library'
-    publishVersion = '0.21'
-    desc = 'Notti Library Release'
-    website = 'https://github.com/bertrandmartel/notti-library'
+
+
+def siteUrl = 'https://github.com/bertrandmartel/notti-library'
+def gitUrl = 'https://github.com/bertrandmartel/notti-library.git'
+
+
+group = 'fr.bmartel'
+version = android.defaultConfig.versionName
+
+bintray {
+    user = "$System.env.BINTRAY_USER"
+    key = "$System.env.BINTRAY_KEY"
+
+    configurations = ['archives']
+
+    dryRun = false //Whether to run this as dry-run, without deploying
+    publish = true //If version should be auto published after an upload
+
+    pkg {
+        repo = 'maven'
+        name = 'notti-service'
+        desc = 'Android app interacting with Notti bluetooth device'
+        websiteUrl = siteUrl
+        issueTrackerUrl = 'https://github.com/bertrandmartel/notti-library/issues'
+        vcsUrl = gitUrl
+        licenses = ['MIT']
+        labels = ['notti','iot']
+        publicDownloadNumbers = true
+
+        version {
+            name = android.defaultConfig.versionName //Bintray logical version name
+            vcsTag = android.defaultConfig.versionName
+
+            gpg {
+                sign = true
+                passphrase = "$System.env.GPG_PASSPHRASE"
+            }
+
+            mavenCentralSync {
+                sync = false
+                //Optional (true by default). Determines whether to sync the version to Maven Central.
+                user = "$System.env.MAVEN_CENTRAL_USER_TOKEN" //OSS user token
+                password = "$System.env.MAVEN_CENTRAL_PASSWORD" //OSS user password
+                close = '1'
+                //Optional property. By default the staging repository is closed and artifacts are released to Maven Central. You can optionally turn this behaviour off (by puting 0 as value) and release the version manually.
+            }
+        }
+    }
+}
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                description 'Android app interacting with Notti bluetooth device'
+                packaging 'aar'
+                name 'notti-service'
+                url siteUrl
+                licenses {
+                    license {
+                        name 'The MIT License'
+                        url 'https://github.com/bertrandmartel/notti-library/blob/master/LICENSE.md'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'bertrandmartel'
+                        name 'Bertrand Martel'
+                        email 'bmartel.fr@gmail.com'
+                    }
+                }
+                scm {
+                    connection 'https://github.com/bertrandmartel/notti-library.git'
+                    developerConnection 'https://github.com/bertrandmartel/notti-library.git'
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    failOnError false
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
 }
